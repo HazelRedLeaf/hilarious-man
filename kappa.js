@@ -21,6 +21,7 @@ simpsonsTitleRegExp = /\/randomtitle/i;
 titleRegExp = /\/title\s+(.+)/i;
 todoRegExp = /^\/todo\s+(.+)/i;
 
+magicConchRegExp = /magic\s+conch/i;
 fuckRegExp = /fuck you (.+)/i;
 goodShitRegExp = /good shit .* shit right/i;
 ytRegExp = /\/xxxyt\s+(.+)/i;
@@ -52,6 +53,7 @@ dearData =
 ];
 
 pause = false;
+magicConchCooldown = 0;
 
 messages = [];
 fs.readFile('dear.json', {encoding:'utf8', flag:'a+'}, function callback(err, dataIn)
@@ -212,6 +214,9 @@ fs.readFile('account.json', {encoding:'utf8', flag:'a+'}, function callback(err,
                 
                 if (todoRegExp.test(event.body))
                     todo(api, event);
+                
+                if (magicConchRegExp.test(event.body))
+                    magicConch(api, event);
             //*
             }
             //*/
@@ -1973,4 +1978,40 @@ function yt(api, event)
         else
             api.sendMessage("denied", event.threadID);
     });
+}
+
+function magicConch(api, event)
+{
+    var cooldownLength = 3;
+    var inTheClub =
+    [
+        "Sure",
+        "Absolutely",
+        "Yes",
+        "Go right ahead",
+        "By all means",
+        "Be my guest"
+    ];
+
+    if (event.senderID == 722210172)
+        api.sendMessage(inTheClub[Math.floor(Math.random() * inTheClub.length)], event.threadID);
+    else
+    {
+        if (magicConchCooldown === cooldownLength)
+        {
+            api.sendMessage("*Nooooo*", event.threadID);
+            magicConchCooldown--;
+        }
+        else if (Math.floor(Math.random() * 20) == 0)
+        {
+            api.sendMessage("Try asking again", event.threadID);
+            magicConchCooldown = cooldownLength;
+        }
+        else
+        {
+            api.sendMessage("No", event.threadID);
+            if (magicConchCooldown > 0)
+                magicConchCooldown--;
+        }
+    }
 }
