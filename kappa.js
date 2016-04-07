@@ -1,61 +1,67 @@
-var login = require("facebook-chat-api");
-var YouTube = require('youtube-node');
-var fs = require('fs');
+'use strict';
 
-var youTube = new YouTube();
+let login = require("facebook-chat-api");
+let YouTube = require('youtube-node');
+let fs = require('fs');
+
+let youTube = new YouTube();
 
 youTube.setKey('AIzaSyB1OOSpTREs85WUMvIgJvLTZKye4BVsoFU');
 
-abareTosanamiRegExp = /abare.*tosanami/gi;
-nvidiaRegExp = /nvidia/gi;
-sadRegExp = /\bsad|Q_Q|;_;/gi;
-gzRegExp = /\bgz\b|well done|congrat|grat[sz]/gi;
-definitelyRegExp = /defi(?:n(?:ate|[ae]n?t)|ant)ly/gi;
+let abareTosanamiRegExp = /abare.*tosanami/gi;
+let nvidiaRegExp = /nvidia/gi;
+let sadRegExp = /\bsad|Q_Q|;_;/gi;
+let gzRegExp = /\bgz\b|well done|congrat|grat[sz]/gi;
+let definitelyRegExp = /defi(?:n(?:ate|[ae]n?t)|ant)ly/gi;
+let whateverRegExp = /whatever|w\/e/i;
 
-peteQuoteRegExp = /\/petequote\s*(.+)?/i;
-soadQuoteRegExp = /\/soadquote\s*(.+)?/i;
-homerQuoteRegExp = /\/homerquote\s*(.+)?/i;
-sayRegExp = /\/say\s+(.+)?/i;
-stadiumRegExp = /\/stadium|\/reroll/i;
-simpsonsTitleRegExp = /\/randomtitle/i;
-titleRegExp = /\/title\s+(.+)/i;
-todoRegExp = /^\/todo\s+(.+)/i;
+let peteQuoteRegExp = /\/petequote\s*(.+)?/i;
+let soadQuoteRegExp = /\/soadquote\s*(.+)?/i;
+let homerQuoteRegExp = /\/homerquote\s*(.+)?/i;
+let sayRegExp = /\/say\s+(.+)?/i;
+let stadiumRegExp = /\/stadium|\/reroll/i;
+let simpsonsTitleRegExp = /\/randomtitle/i;
+let titleRegExp = /\/title\s+(.+)/i;
+let todoRegExp = /^\/todo\s+(.+)/i;
+let ignoreRegExp = /^\/ignore\s+(.+)/i;
+let unignoreRegExp = /^\/unignore\s+(.+)/i;
 
-magicConchRegExp = /magic\s+conch/i;
-fuckRegExp = /fuck you (.+)/i;
-goodShitRegExp = /good shit .* shit right/i;
-ytRegExp = /\/xxxyt\s+(.+)/i;
+let magicConchRegExp = /magic\s+conch/i; 
+let fuckRegExp = /fuck you (.+)/i;
+let goodShitRegExp = /good shit .* shit right/i;
+let ytRegExp = /\/yt\s+(.+)/i;
 
-dearRegExp_prefix_prefix = "^/(?:dear|memo|meme-o)";
-dearRegExp = new RegExp("^/(?:dear|memo|meme-o)", 'i');
-davidRegExp = "dav|gen";
-kassianRegExp = "kass|(?:\\w*\\W*)?hawk|k455";
-patrickRegExp = "pat|\\w*gief";
-peteRegExp = "pete|dud|flake";
-tomRegExp = "tom|chun(?:\\W*li)?";
-wesleyRegExp = "wes|ogg|rose";
-dearRegExp_prefix = dearRegExp_prefix_prefix + "\\s+((?:";
-dearRegExp_suffix = ").+)";
-dearRegExp_David = new RegExp(dearRegExp_prefix + davidRegExp + dearRegExp_suffix, 'i');
-dearRegExp_Kassian = new RegExp(dearRegExp_prefix + kassianRegExp + dearRegExp_suffix, 'i');
-dearRegExp_Patrick = new RegExp(dearRegExp_prefix + patrickRegExp + dearRegExp_suffix, 'i');
-dearRegExp_Pete = new RegExp(dearRegExp_prefix + peteRegExp + dearRegExp_suffix, 'i');
-dearRegExp_Tom = new RegExp(dearRegExp_prefix + tomRegExp + dearRegExp_suffix, 'i');
-dearRegExp_Wesley = new RegExp(dearRegExp_prefix + wesleyRegExp + dearRegExp_suffix, 'i');
-dearData = 
-[
-    {id:532092405, regexp:dearRegExp_David},
-    {id:1677897853, regexp:dearRegExp_Kassian},
-    {id:722210172, regexp:dearRegExp_Patrick},
-    {id:1384616951, regexp:dearRegExp_Pete},
-    {id:1337032824, regexp:dearRegExp_Tom},
-    {id:1187113581, regexp:dearRegExp_Wesley},
-];
+let dearRegExp_prefix_prefix = "^/(?:dear|memo|meme-o)";
+let dearRegExp = new RegExp(dearRegExp_prefix_prefix, 'i');
+let davidRegExp = "dav|gen";
+let kassianRegExp = "kas|(?:\\w*\\W*)?hawk|k45";
+let patrickRegExp = "pat|\\w*gief";
+let peteRegExp = "pete|dud|flake";
+let tomRegExp = "tom|chun(?:\\W*li)?";
+let wesleyRegExp = "wes|ogg|rose";
+let dearRegExp_prefix = dearRegExp_prefix_prefix + "\\s+(?:";
+let dearRegExp_suffix = ")\\w*?(\\s+.+)";
+let dearRegExp_David   = new RegExp(dearRegExp_prefix + davidRegExp   + dearRegExp_suffix, 'i');
+let dearRegExp_Patrick = new RegExp(dearRegExp_prefix + patrickRegExp + dearRegExp_suffix, 'i');
+let dearRegExp_Kassian = new RegExp(dearRegExp_prefix + kassianRegExp + dearRegExp_suffix, 'i');
+let dearRegExp_Pete    = new RegExp(dearRegExp_prefix + peteRegExp    + dearRegExp_suffix, 'i');
+let dearRegExp_Tom     = new RegExp(dearRegExp_prefix + tomRegExp     + dearRegExp_suffix, 'i');
+let dearRegExp_Wesley  = new RegExp(dearRegExp_prefix + wesleyRegExp  + dearRegExp_suffix, 'i');
+let dearData = new Map
+([
+    ["532092405",  {regExp: new RegExp(davidRegExp,   'i'), dearRegExp: dearRegExp_David,   name: "David"}],
+    ["722210172",  {regExp: new RegExp(patrickRegExp, 'i'), dearRegExp: dearRegExp_Patrick, name: "Patrick"}],
+    ["1677897853", {regExp: new RegExp(kassianRegExp, 'i'), dearRegExp: dearRegExp_Kassian, name: "Kassian"}],
+    ["1384616951", {regExp: new RegExp(peteRegExp,    'i'), dearRegExp: dearRegExp_Pete,    name: "Pete"}],
+    ["1337032824", {regExp: new RegExp(tomRegExp,     'i'), dearRegExp: dearRegExp_Tom,     name: "Tom"}],
+    ["1187113581", {regExp: new RegExp(wesleyRegExp,  'i'), dearRegExp: dearRegExp_Wesley,  name: "Wesley"}],
+]);
 
-pause = false;
-magicConchCooldown = 0;
+let pause = false;
+let magicConchCooldown = 0;
+let ignoreList = new Set();
 
-messages = [];
+let messages = [];
 fs.readFile('dear.json', {encoding:'utf8', flag:'a+'}, function callback(err, dataIn)
 {
     if (err)
@@ -69,7 +75,7 @@ fs.readFile('dear.json', {encoding:'utf8', flag:'a+'}, function callback(err, da
     {};
 });
 
-ideas = [];
+let ideas = [];
 fs.readFile('todo.json', {encoding:'utf8', flag:'a+'}, function callback(err, dataIn)
 {
     if (err)
@@ -83,13 +89,12 @@ fs.readFile('todo.json', {encoding:'utf8', flag:'a+'}, function callback(err, da
     {};
 });
 
-account = 0;
 fs.readFile('account.json', {encoding:'utf8', flag:'a+'}, function callback(err, dataIn)
 {
     if (err)
         return console.error(err);
     
-    account = JSON.parse(dataIn);
+    let account = JSON.parse(dataIn);
 
     login({email: account.email, password: account.password}, function loginCallback(err, api)
     {
@@ -99,12 +104,11 @@ fs.readFile('account.json', {encoding:'utf8', flag:'a+'}, function callback(err,
         api.setOptions({selfListen: true});
         api.setOptions({listenEvents: true});
         
-        var stopListening = api.listen(function callback(err, event)
+        api.listen(function callback(err, event)
         {
             if (err)
                 return console.error(err);
 
-            //*
             if (event.type != "message")
             {
                 if (pause)
@@ -117,7 +121,6 @@ fs.readFile('account.json', {encoding:'utf8', flag:'a+'}, function callback(err,
             }
             else
             {
-            //*/
                 if (pause)
                 {
                     if (event.senderID == 722210172 && event.body === "/start")
@@ -130,6 +133,15 @@ fs.readFile('account.json', {encoding:'utf8', flag:'a+'}, function callback(err,
                     pause = true;
                     return;
                 }
+                
+                if (event.senderID == 722210172 && unignoreRegExp.test(event.body))
+                    unignore(api, event);
+                
+                if (ignoreList.has(event.senderID))
+                    return;
+                
+                if (event.senderID == 722210172 && ignoreRegExp.test(event.body))
+                    ignore(api, event);
                 
                 if (event.body === '/messages')
                     api.sendMessage(JSON.stringify(messages, null, 4), event.threadID);
@@ -149,8 +161,8 @@ fs.readFile('account.json', {encoding:'utf8', flag:'a+'}, function callback(err,
                 var messages_relevant = messages.filter((m) => m.to == event.senderID);
                 if (messages_relevant)
                 {
-                    for (var i = 0; i < messages_relevant.length; ++i)
-                        api.sendMessage(messages_relevant[i].message, event.threadID);
+                    for (let message_relevant of messages_relevant)
+                        api.sendMessage(message_relevant.message, event.threadID);
                     
                     messages = messages.filter((m) => m.to != event.senderID);
                     fs.writeFile('dear.json', JSON.stringify(messages, null, 4), function callback(err)
@@ -217,12 +229,46 @@ fs.readFile('account.json', {encoding:'utf8', flag:'a+'}, function callback(err,
                 
                 if (magicConchRegExp.test(event.body))
                     magicConch(api, event);
-            //*
+                
+                if (simpsonsTitleRegExp.test(event.body))
+                    simpsonsTitle(api, event);
+                
+                if (whateverRegExp.test(event.body))
+                    api.sendMessage({url: "https://www.youtube.com/watch?v=Xz7_3n7xyDg"}, event.threadID);
             }
-            //*/
         });
     });
 });
+
+function ignore(api, event)
+{
+    for (let dearDatum of dearData)
+    {
+        let id = dearDatum[0];
+        let datum = dearDatum[1];
+        
+        if (datum.regExp.test(event.body))
+        {
+            ignoreList.add(id);
+            return;
+        }
+    }
+}
+
+function unignore(api, event)
+{
+    for (let dearDatum of dearData)
+    {
+        let id = dearDatum[0];
+        let datum = dearDatum[1];
+        
+        if (datum.regExp.test(event.body))
+        {
+            ignoreList.delete(id);
+            return;
+        }
+    }
+}
 
 function homerQuote(api, event)
 {
@@ -474,6 +520,7 @@ function peteQuote(body)
         "Abare 'no' tosanami",
         "I piss a lot because I drink a shitload of coffee on modafinil",
         "I'm not gonna flake",
+        "Oh yeah I flaked",
         "*God no*",
         "I *could*",
         "It only has one dual-core conventional CPU, so they could map that to the x86 core in the PS4, and find some way of translatin operations from the 8 SIMD processors to the GPU",
@@ -662,6 +709,139 @@ function stadium()
     for (var i = 1; i < ids.length; ++i)
         message += "\n" + ids[i] + " " + pokemon[ids[i] - 1];
     return message;
+}
+
+function dear(event)
+{
+    for (let dearDatum of dearData)
+    {
+        let id = dearDatum[0];
+        let datum = dearDatum[1];
+        
+        let message = datum.dearRegExp.exec(event.body);
+        if (!message)
+            continue;
+        
+        message = '<' + dearData.get(event.senderID).name + '>' + message[1];
+        messages.push({"to":id, "message":message});
+        
+        fs.writeFile('dear.json', JSON.stringify(messages, null, 4), function callback(err)
+        {
+            if (err)
+                return console.error(err);
+        });
+        return true;
+    }
+    
+    return false;
+}
+
+function todo(api, event)
+{
+    var idea = todoRegExp.exec(event.body)[1];
+    ideas.push(idea);
+    
+    fs.writeFile('todo.json', JSON.stringify(ideas, null, 4), function callback(err)
+    {
+        if (err)
+            return console.error(err);
+    });
+    
+    api.sendMessage("I'll think about it...", event.threadID);
+}
+
+function denied(api, event, done)
+{
+    var idea = ideas.pop();
+    
+    fs.writeFile('todo.json', JSON.stringify(ideas, null, 4), function callback(err)
+    {
+        if (err)
+            return console.error(err);
+    });
+    
+    if (done)
+        api.sendMessage("Done: " + idea, event.threadID);
+    else
+        api.sendMessage("Nah.", event.threadID);
+}
+
+function fuckYou(api, event)
+{
+    youTube.addParam('channelId', 'UCXdY60PbXqRuxOQ6jT5usTg');
+    youTube.search('fuck you ' + fuckRegExp.exec(event.body)[1], 1, function(err, result)
+    {
+        if (err)
+            return console.error(err);
+        
+        if (result.items[0])
+            api.sendMessage({url: "https://www.youtube.com/watch?v=" + result.items[0].id.videoId}, event.threadID);
+        else
+            api.sendMessage("fuck you " + event.senderName, event.threadID);
+    });
+    youTube.params = {};
+    youTube.setKey('AIzaSyB1OOSpTREs85WUMvIgJvLTZKye4BVsoFU');
+}
+
+function goodShit(api, event)
+{
+    api.removeUserFromGroup(event.senderID, event.threadID, function(err)
+    {
+        if (err)
+            return console.error(err);
+        
+        api.addUserToGroup(event.senderID, event.threadID);
+    });
+}
+
+function yt(api, event)
+{
+    youTube.search(ytRegExp.exec(event.body)[1], 1, function(err, result)
+    {
+        if (err)
+            return console.error(err);
+        
+        if (result.items[0] && result.items[0].id && result.items[0].id.videoId)
+            api.sendMessage({url: "https://www.youtube.com/watch?v=" + result.items[0].id.videoId}, event.threadID);
+        else
+            api.sendMessage("denied", event.threadID);
+    });
+}
+
+function magicConch(api, event)
+{
+    var cooldownLength = 3;
+    var inTheClub =
+    [
+        "Sure",
+        "Absolutely",
+        "Yes",
+        "Go right ahead",
+        "By all means",
+        "Be my guest"
+    ];
+
+    if (event.senderID == 722210172)
+        api.sendMessage(inTheClub[Math.floor(Math.random() * inTheClub.length)], event.threadID);
+    else
+    {
+        if (magicConchCooldown === cooldownLength)
+        {
+            api.sendMessage("*Nooooo*", event.threadID);
+            magicConchCooldown--;
+        }
+        else if (Math.floor(Math.random() * 20) == 0)
+        {
+            api.sendMessage("Try asking again", event.threadID);
+            magicConchCooldown = cooldownLength;
+        }
+        else
+        {
+            api.sendMessage("No", event.threadID);
+            if (magicConchCooldown > 0)
+                magicConchCooldown--;
+        }
+    }
 }
 
 function soadQuote(body)
@@ -1883,135 +2063,4 @@ function soadQuote(body)
         return suggestedQuotes[Math.floor(Math.random() * suggestedQuotes.length)];
     
     return "the quote fucked the system";
-}
-
-function dear(event)
-{
-    for (var i = 0; i < dearData.length; ++i)
-    {
-        var message = dearData[i].regexp.exec(event.body);
-        if (!message)
-            continue;
-        message = '<' + event.senderName + '> ' + message[1];
-
-        var to = dearData[i].id;
-        messages.push({"to":to, "message":message});
-        
-        fs.writeFile('dear.json', JSON.stringify(messages, null, 4), function callback(err)
-        {
-            if (err)
-                return console.error(err);
-        });
-        return true;
-    }
-    
-    return false;
-}
-
-function todo(api, event)
-{
-    var idea = todoRegExp.exec(event.body)[1];
-    ideas.push(idea);
-    
-    fs.writeFile('todo.json', JSON.stringify(ideas, null, 4), function callback(err)
-    {
-        if (err)
-            return console.error(err);
-    });
-    
-    api.sendMessage("I'll think about it...", event.threadID);
-}
-
-function denied(api, event, done)
-{
-    var idea = ideas.pop();
-    
-    fs.writeFile('todo.json', JSON.stringify(ideas, null, 4), function callback(err)
-    {
-        if (err)
-            return console.error(err);
-    });
-    
-    if (done)
-        api.sendMessage("Done: " + idea, event.threadID);
-    else
-        api.sendMessage("Nah.", event.threadID);
-}
-
-function fuckYou(api, event)
-{
-    youTube.addParam('channelId', 'UCXdY60PbXqRuxOQ6jT5usTg');
-    youTube.search('fuck you ' + fuckRegExp.exec(event.body)[1], 1, function(err, result)
-    {
-        if (err)
-            return console.error(err);
-        
-        if (result.items[0])
-            api.sendMessage({url: "https://www.youtube.com/watch?v=" + result.items[0].id.videoId}, event.threadID);
-        else
-            api.sendMessage("fuck you " + event.senderName, event.threadID);
-    });
-    youTube.params = {};
-    youTube.setKey('AIzaSyB1OOSpTREs85WUMvIgJvLTZKye4BVsoFU');
-}
-
-function goodShit(api, event)
-{
-    api.removeUserFromGroup(event.senderID, event.threadID, function(err)
-    {
-        if (err)
-            return console.error(err);
-        
-        api.addUserToGroup(event.senderID, event.threadID);
-    });
-}
-
-function yt(api, event)
-{
-    youTube.search(ytRegExp.exec(event.body)[1], 1, function(err, result)
-    {
-        if (err)
-            return console.error(err);
-        
-        if (result.items[0] && result.items[0].id && result.items[0].id.videoId)
-            api.sendMessage({url: "https://www.youtube.com/watch?v=" + result.items[0].id.videoId}, event.threadID);
-        else
-            api.sendMessage("denied", event.threadID);
-    });
-}
-
-function magicConch(api, event)
-{
-    var cooldownLength = 3;
-    var inTheClub =
-    [
-        "Sure",
-        "Absolutely",
-        "Yes",
-        "Go right ahead",
-        "By all means",
-        "Be my guest"
-    ];
-
-    if (event.senderID == 722210172)
-        api.sendMessage(inTheClub[Math.floor(Math.random() * inTheClub.length)], event.threadID);
-    else
-    {
-        if (magicConchCooldown === cooldownLength)
-        {
-            api.sendMessage("*Nooooo*", event.threadID);
-            magicConchCooldown--;
-        }
-        else if (Math.floor(Math.random() * 20) == 0)
-        {
-            api.sendMessage("Try asking again", event.threadID);
-            magicConchCooldown = cooldownLength;
-        }
-        else
-        {
-            api.sendMessage("No", event.threadID);
-            if (magicConchCooldown > 0)
-                magicConchCooldown--;
-        }
-    }
 }
