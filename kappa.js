@@ -2,11 +2,18 @@
 
 let login = require("facebook-chat-api");
 let YouTube = require('youtube-node');
+let wolfram = require('wolfram-alpha').createClient("YQE65X-889KH7VWTP", {format:"image"});
 let fs = require('fs');
+let request = require('request');
 
 let youTube = new YouTube();
-
 youTube.setKey('AIzaSyB1OOSpTREs85WUMvIgJvLTZKye4BVsoFU');
+
+function defaultError2(err, ignored)
+{
+    if (err)
+        console.error(err);
+}
 
 let abareTosanamiRegExp = /abare.*tosanami/gi;
 let nvidiaRegExp = /nvidia/gi;
@@ -25,11 +32,13 @@ let titleRegExp = /\/title\s+(.+)/i;
 let todoRegExp = /^\/todo\s+(.+)/i;
 let ignoreRegExp = /^\/ignore\s+(.+)/i;
 let unignoreRegExp = /^\/unignore\s+(.+)/i;
+let okRegExp = /^\/ok/i;
 
-let magicConchRegExp = /magic\s+conch/i; 
+let magicConchRegExp = /magic\s+conch.*\?/i; 
 let fuckRegExp = /fuck you (.+)/i;
 let goodShitRegExp = /good shit .* shit right/i;
 let ytRegExp = /\/yt\s+(.+)/i;
+let waRegExp = /\/wa\s+(.+)/i;
 
 let dearRegExp_prefix_prefix = "^/(?:dear|memo|meme-o)";
 let dearRegExp = new RegExp(dearRegExp_prefix_prefix, 'i');
@@ -40,7 +49,7 @@ let peteRegExp = "pete|dud|flake";
 let tomRegExp = "tom|chun(?:\\W*li)?";
 let wesleyRegExp = "wes|ogg|rose";
 let dearRegExp_prefix = dearRegExp_prefix_prefix + "\\s+(?:";
-let dearRegExp_suffix = ")\\w*?(\\s+.+)";
+let dearRegExp_suffix = ")\\S*(\\s+.+)";
 let dearRegExp_David   = new RegExp(dearRegExp_prefix + davidRegExp   + dearRegExp_suffix, 'i');
 let dearRegExp_Patrick = new RegExp(dearRegExp_prefix + patrickRegExp + dearRegExp_suffix, 'i');
 let dearRegExp_Kassian = new RegExp(dearRegExp_prefix + kassianRegExp + dearRegExp_suffix, 'i');
@@ -144,10 +153,13 @@ fs.readFile('account.json', {encoding:'utf8', flag:'a+'}, function callback(err,
                     ignore(api, event);
                 
                 if (event.body === '/messages')
-                    api.sendMessage(JSON.stringify(messages, null, 4), event.threadID);
+                    api.sendMessage(JSON.stringify(messages, null, 4), event.threadID, defaultError2);
                 
                 if (event.body === '/todolist')
-                    api.sendMessage(JSON.stringify(ideas, null, 4), event.threadID);
+                    api.sendMessage(JSON.stringify(ideas, null, 4), event.threadID, defaultError2);
+                
+                if (event.body === '/ping')
+                    api.sendMessage('pong', event.threadID, defaultError2);
                 
                 if (event.senderID == 722210172 && event.body === '/denied')
                     denied(api, event, false);
@@ -156,13 +168,13 @@ fs.readFile('account.json', {encoding:'utf8', flag:'a+'}, function callback(err,
                     denied(api, event, true);
                 
                 if (event.senderID != 100011414462173 && sayRegExp.test(event.body))
-                    api.sendMessage(sayRegExp.exec(event.body)[1], 870772129628937);
+                    api.sendMessage(sayRegExp.exec(event.body)[1], 870772129628937, defaultError2);
                 
                 var messages_relevant = messages.filter((m) => m.to == event.senderID);
                 if (messages_relevant)
                 {
                     for (let message_relevant of messages_relevant)
-                        api.sendMessage(message_relevant.message, event.threadID);
+                        api.sendMessage(message_relevant.message, event.threadID, defaultError2);
                     
                     messages = messages.filter((m) => m.to != event.senderID);
                     fs.writeFile('dear.json', JSON.stringify(messages, null, 4), function callback(err)
@@ -175,35 +187,35 @@ fs.readFile('account.json', {encoding:'utf8', flag:'a+'}, function callback(err,
                 if (dearRegExp.test(event.body))
                 {
                     if (dear(event))
-                        api.sendMessage("Meme-o prepared", event.threadID);
+                        api.sendMessage("Meme-o prepared", event.threadID, defaultError2);
                     else
-                        api.sendMessage("Did not recognise user", event.threadID);
+                        api.sendMessage("Did not recognise user", event.threadID, defaultError2);
                     return;
                 }
                 
                 if (abareTosanamiRegExp.test(event.body))
-                    api.sendMessage({url: "https://www.youtube.com/watch?v=n6KNIJs8sZQ"}, event.threadID);
+                    api.sendMessage({url: "https://www.youtube.com/watch?v=n6KNIJs8sZQ"}, event.threadID, defaultError2);
                 
                 if (nvidiaRegExp.test(event.body))
-                    api.sendMessage({url: "https://www.youtube.com/watch?v=iYWzMvlj2RQ&t=30"}, event.threadID);
+                    api.sendMessage({url: "https://www.youtube.com/watch?v=iYWzMvlj2RQ&t=30"}, event.threadID, defaultError2);
                 
                 if (sadRegExp.test(event.body))
-                    api.sendMessage({url: "https://www.youtube.com/watch?v=nf-ANnjvrlA"}, event.threadID);
+                    api.sendMessage({url: "https://www.youtube.com/watch?v=nf-ANnjvrlA"}, event.threadID, defaultError2);
                 
                 if (gzRegExp.test(event.body))
-                    api.sendMessage({url: "https://www.youtube.com/watch?v=IsLML-k4epI"}, event.threadID);
+                    api.sendMessage({url: "https://www.youtube.com/watch?v=IsLML-k4epI"}, event.threadID, defaultError2);
                 
                 if (definitelyRegExp.test(event.body))
-                    api.sendMessage({url: "http://d-e-f-i-n-i-t-e-l-y.com/"}, event.threadID);
+                    api.sendMessage({url: "http://d-e-f-i-n-i-t-e-l-y.com/"}, event.threadID, defaultError2);
                 
                 if (peteQuoteRegExp.test(event.body))
-                    api.sendMessage('<Pete> ' + peteQuote(event.body), event.threadID);
+                    api.sendMessage('<Pete> ' + peteQuote(event.body), event.threadID, defaultError2);
                 
                 if (soadQuoteRegExp.test(event.body))
-                    api.sendMessage(soadQuote(event.body), event.threadID);
+                    api.sendMessage(soadQuote(event.body), event.threadID, defaultError2);
                 
                 if (stadiumRegExp.test(event.body))
-                    api.sendMessage(stadium(), event.threadID);
+                    api.sendMessage(stadium(), event.threadID, defaultError2);
                 
                 if (event.senderID != 100011414462173 && fuckRegExp.test(event.body))
                     fuckYou(api, event);
@@ -218,11 +230,7 @@ fs.readFile('account.json', {encoding:'utf8', flag:'a+'}, function callback(err,
                     homerQuote(api, event);
                 
                 if (titleRegExp.test(event.body))
-                    api.setTitle(titleRegExp.exec(event.body)[1], event.threadID, function callback(err, obj)
-                    {
-                        if (err)
-                            return console.error(err);
-                    });
+                    api.setTitle(titleRegExp.exec(event.body)[1], event.threadID, defaultError2);
                 
                 if (todoRegExp.test(event.body))
                     todo(api, event);
@@ -234,11 +242,44 @@ fs.readFile('account.json', {encoding:'utf8', flag:'a+'}, function callback(err,
                     simpsonsTitle(api, event);
                 
                 if (whateverRegExp.test(event.body))
-                    api.sendMessage({url: "https://www.youtube.com/watch?v=Xz7_3n7xyDg"}, event.threadID);
+                    api.sendMessage({url: "https://www.youtube.com/watch?v=Xz7_3n7xyDg"}, event.threadID, defaultError2);
+                
+                if (okRegExp.test(event.body))
+                    api.sendMessage({attachment: fs.createReadStream('ok.jpg')}, event.threadID, defaultError2);
+                
+                if (waRegExp.test(event.body))
+                    wa(api, event);
             }
         });
     });
 });
+
+function wa(api, event)
+{
+    wolfram.query(waRegExp.exec(event.body)[1], function callback(err, result)
+    {
+        if (err)
+            return console.error(err);
+        
+        let images = 0;
+        for (let pod of result)
+            if (pod.subpods)
+                for (let subpod of pod.subpods)
+                    request.get({url: subpod.image, encoding: 'binary'}, (function(i)
+                    {
+                        return function(err, response, body)
+                        {
+                            fs.writeFile("wa/" + i.toString() + ".gif", body, 'binary', function callback(err)
+                            {
+                                if (err)
+                                    return console.error(err);
+                                
+                                api.sendMessage({attachment: fs.createReadStream("wa/" + i.toString() + ".gif")}, event.threadID, defaultError2);
+                            });
+                        };
+                    })(images++));
+    });
+}
 
 function ignore(api, event)
 {
@@ -525,7 +566,8 @@ function peteQuote(body)
         "I *could*",
         "It only has one dual-core conventional CPU, so they could map that to the x86 core in the PS4, and find some way of translatin operations from the 8 SIMD processors to the GPU",
         "Hilarious man, what did I do before I met you?",
-        "Fuck, I am a vaping douchebag"
+        "Fuck, I am a vaping douchebag",
+        "I can simulate it, yeah; but the thing that's fucking up is the AXI interface (or the AMBA extensible interface interface). The simulation model for the AXI slave interface on the chip isn't included in the general Vivado license. So I had to write a dummy, diagnostic AXI slave. So I simulate with that, and it works fine, but I'm writing FPGA logic and code, so I have a bunch of different functions running on the ARM core that write various things to the address that the VGA driver reads from. I actually had to disable the cache on the ARM core, because data written to ram wasn't manifesting itself in the FPGA logic. The particular slave interface on the physical FPGA is a high-performance, deeply buffered interface to off-chip memory, scheduling coarse-grained memory access alongside the ARM cores & cache heirarchy"
     ];
     
     var suggestion = peteQuoteRegExp.exec(body)[1];
@@ -777,7 +819,7 @@ function fuckYou(api, event)
         if (result.items[0])
             api.sendMessage({url: "https://www.youtube.com/watch?v=" + result.items[0].id.videoId}, event.threadID);
         else
-            api.sendMessage("fuck you " + event.senderName, event.threadID);
+            api.sendMessage("fuck you " + dearData[event.senderID].name, event.threadID);
     });
     youTube.params = {};
     youTube.setKey('AIzaSyB1OOSpTREs85WUMvIgJvLTZKye4BVsoFU');
@@ -810,27 +852,34 @@ function yt(api, event)
 
 function magicConch(api, event)
 {
-    var cooldownLength = 3;
-    var inTheClub =
+    let cooldownLength = 5;
+    let inTheClub =
     [
         "Sure",
         "Absolutely",
         "Yes",
+        "Certainly",
+        "Without question",
+        "Definitely",
+        "Of course",
+        "It wouldn't surprise me",
+        "I'd be delighted",
         "Go right ahead",
         "By all means",
         "Be my guest"
     ];
 
-    if (event.senderID == 722210172)
+    if (event.senderID == 722210172 || event.senderID == 1384616951)
         api.sendMessage(inTheClub[Math.floor(Math.random() * inTheClub.length)], event.threadID);
     else
     {
         if (magicConchCooldown === cooldownLength)
         {
             api.sendMessage("*Nooooo*", event.threadID);
-            magicConchCooldown--;
+            if (magicConchCooldown > 0)
+                magicConchCooldown--;
         }
-        else if (Math.floor(Math.random() * 20) == 0)
+        else if (magicConchCooldown === 0 && Math.floor(Math.random() * 20) === 0)
         {
             api.sendMessage("Try asking again", event.threadID);
             magicConchCooldown = cooldownLength;
@@ -846,7 +895,7 @@ function magicConch(api, event)
 
 function soadQuote(body)
 {
-    quotes = 
+    let quotes = 
     [
         "4000 hungry children leave us per hour",
         "a deer dance, invitation to peace",
@@ -2053,12 +2102,12 @@ function soadQuote(body)
         "your sacred silence"
     ];
 
-    var suggestion = soadQuoteRegExp.exec(body)[1];
+    let suggestion = soadQuoteRegExp.exec(body)[1];
     if (!suggestion)
         return quotes[Math.floor(Math.random() * quotes.length)];
     
     suggestion = suggestion.toLowerCase();
-    suggestedQuotes = quotes.filter((q) => q.toLowerCase().includes(suggestion));
+    let suggestedQuotes = quotes.filter((q) => q.toLowerCase().includes(suggestion));
     if (suggestedQuotes.length > 0)
         return suggestedQuotes[Math.floor(Math.random() * suggestedQuotes.length)];
     
